@@ -125,7 +125,12 @@ var CreateApplyForLeave = React.createClass({
 });
 
 function selectType() {
-    ToastAndroid.show('select type', ToastAndroid.SHORT);
+    var SelectListAndroid = require('./js/SelectListAndroid');
+    var jsonArrayStr = "['hello1', 'hello2', 'hello3']";
+    SelectListAndroid.showList("请选择请假类型", jsonArrayStr, function(selectedItem) {
+        ToastAndroid.show(selectedItem, ToastAndroid.SHORT);
+    });
+    // ToastAndroid.show('select type', ToastAndroid.SHORT);
 }
 
 function selectDate() {

@@ -70,6 +70,7 @@ public class DetailActivity extends AppCompatActivity implements DefaultHardware
                 .addPackage(new MainReactPackage())
                 .addPackage(new ActivityAndroidReactPackage())
                 .addPackage(new ReactDatePackage(this))
+                .addPackage(new SelectListReactPackage(this))
                 .setUseDeveloperSupport(BuildConfig.DEBUG)
                 .setInitialLifecycleState(LifecycleState.RESUMED)
                 .build();
