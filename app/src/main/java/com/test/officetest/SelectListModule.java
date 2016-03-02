@@ -6,6 +6,7 @@ import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.ReadableArray;
 
 /**
  * Created by yubo on 2016/2/15.
@@ -25,8 +26,8 @@ public class SelectListModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void showList(String title, String jsonArrayStr, Callback successCallback) {
-        ListAlertDialog dialog = new ListAlertDialog(this.mActivity, title, jsonArrayStr, successCallback);
+    public void showList(String title, ReadableArray readableArray, Callback successCallback) {
+        ListAlertDialog dialog = new ListAlertDialog(this.mActivity, title, readableArray, successCallback);
         dialog.showListAlertDialog();
     }
 

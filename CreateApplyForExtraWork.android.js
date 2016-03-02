@@ -11,12 +11,15 @@ import React, {
     AsyncStorage,
     TextInput,
     TouchableOpacity,
-    ToastAndroid
+    ToastAndroid,
 } from 'react-native';
 
-var GET_TYPE_URL = "http://api.listome.com/v1/companies/leave/types";
-
 var CreateApplyForExtraWork = React.createClass({
+    getInitialState: function() {
+        return {
+            selectedExtraWorkType: ''
+        };
+    },
     render: function() {
         return (
             <View style={styles.container}>
@@ -26,8 +29,8 @@ var CreateApplyForExtraWork = React.createClass({
                 </View>
                 <View style={styles.divider} />
                 <View style={[styles.textInputView, styles.height45]}>
-                    <TextInput editable={false} placeholder='选择加班类型' underlineColorAndroid='transparent' style={[styles.textInput, styles.height40]} />
-                    <TouchableOpacity onPress={selectType} activityOpacity={0.9}>
+                    <TextInput value={this.state.selectedExtraWorkType} editable={false} placeholder='选择加班类型' underlineColorAndroid='transparent' style={[styles.textInput, styles.height40]} />
+                    <TouchableOpacity onPress={this.selectType} activityOpacity={0.9}>
                         <Image source={require('./images/ic_list.png')} style={styles.iconImageStyle} />
                     </TouchableOpacity>
                 </View>
@@ -54,32 +57,37 @@ var CreateApplyForExtraWork = React.createClass({
                 <View style={styles.divider} />
                 <View style={[styles.textInputView, styles.height45]}>
                     <TextInput multiline={true} placeholder='选择开始时间' underlineColorAndroid='transparent' style={[styles.textInput, styles.height40]} />
-                    <TouchableOpacity onPress={selectDate} activityOpacity={0.9}>
+                    <TouchableOpacity onPress={this.selectDate} activityOpacity={0.9}>
                         <Image source={require('./images/ic_calendar.png')} style={styles.iconImageStyle} />
                     </TouchableOpacity>
                 </View>
                 <View style={[styles.textInputView, styles.height45, styles.marginTop5]}>
                     <TextInput multiline={true} placeholder='选择结束时间' underlineColorAndroid='transparent' style={[styles.textInput, styles.height40]} />
-                    <TouchableOpacity onPress={selectDate} activityOpacity={0.9}>
+                    <TouchableOpacity onPress={this.selectDate} activityOpacity={0.9}>
                         <Image source={require('./images/ic_calendar.png')} style={styles.iconImageStyle} />
                     </TouchableOpacity>
                 </View>
             </View>
         );
+    },
+    //选择加班类型
+    selectType: function() {
+        var self = this;
+        var SelectListAndroid = require('./js/SelectListAndroid');
+        var types = ['工作日加班', '双休日加班', '法定节假日加班', '其他'];
+        SelectListAndroid.showList('请选择加班类型', types, function(selectedItem) {
+            self.setState({selectedExtraWorkType: selectedItem});
+        });
+    },
+    //选择时间
+    selectDate: function() {
+        // ToastAndroid.show('select date', ToastAndroid.SHORT);
+        var DateAndroid = require('./DateAndroid');
+        DateAndroid.showDatepicker(function() {}, function(hour, minute) {
+            ToastAndroid.show(hour + ":" + minute, ToastAndroid.SHORT);
+        });
     }
 });
-
-function selectType() {
-    ToastAndroid.show('select type', ToastAndroid.SHORT);
-}
-
-function selectDate() {
-    // ToastAndroid.show('select date', ToastAndroid.SHORT);
-    var DateAndroid = require('./DateAndroid');
-    DateAndroid.showDatepicker(function() {}, function(hour, minute) {
-        ToastAndroid.show(hour + ":" + minute, ToastAndroid.SHORT);
-    });
-}
 
 const styles = {
 	container: {
@@ -119,6 +127,7 @@ const styles = {
         marginLeft: 5,
         marginRight: 5,
         flex: 1,
+        color: '#000000',
     },
     height40: {
         height: 40,
