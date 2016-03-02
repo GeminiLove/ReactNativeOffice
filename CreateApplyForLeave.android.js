@@ -4,6 +4,7 @@
 'use strict';
 
 import React, {
+    Alert,
     View,
     Text,
     PixelRatio,
@@ -25,6 +26,7 @@ var CreateApplyForLeave = React.createClass({
             errorMsg: '',
             leaveTypes: [],
             selectedLeaveType: [],
+            reason: '',
             startTime: '',
             endTime: ''
         };
@@ -55,7 +57,7 @@ var CreateApplyForLeave = React.createClass({
                     </View>
                     <View style={styles.divider} />
                     <View style={[styles.textInputView, styles.height105]}>
-                        <TextInput multiline={true} placeholder='填写请假原因' underlineColorAndroid='transparent' style={[styles.textInput, styles.height100]} />
+                        <TextInput value={this.state.reason} onChange={(text) => {this.setState({reason: text})}} multiline={true} placeholder='填写请假原因' underlineColorAndroid='transparent' style={[styles.textInput, styles.height100]} />
                     </View>
                     <View style={[styles.linearTitle, styles.marginTop15]}>
                         <Image source={require('./images/ic_apply_for_leave_time.png')} style={styles.smallIcon} />
@@ -74,7 +76,7 @@ var CreateApplyForLeave = React.createClass({
                             <Image source={require('./images/ic_calendar.png')} style={styles.iconImageStyle} />
                         </TouchableOpacity>
                     </View>
-                    <TouchableOpacity activityOpacity={0.9}>
+                    <TouchableOpacity activityOpacity={0.9} onPress={this.handleSubmit}>
                         <View style={[styles.marginTop15, styles.btnContainer]}>
                             <Text style={styles.btnText}>提交</Text>
                         </View>
@@ -83,6 +85,7 @@ var CreateApplyForLeave = React.createClass({
             );
         }
     },
+    //获取请假类型
     getLeaveType: function() {
         AsyncStorage.getItem('access_token').then((accessToken) => {
             fetch(GET_TYPE_URL, {
@@ -147,11 +150,12 @@ var CreateApplyForLeave = React.createClass({
                 var name = arr[index].name;
                 if(name == selectedItem) {
                     self.setState({selectedLeaveType: arr[index]});
-                    ToastAndroid.show(JSON.stringify(arr[index]), ToastAndroid.SHORT);
+//                    ToastAndroid.show(JSON.stringify(arr[index]), ToastAndroid.SHORT);
                 }
             }
         });
     },
+    //选择日期
     selectDate: function(isStartTime) {
 //        ToastAndroid.show('select date', ToastAndroid.SHORT);
         var DateAndroid = require('./DateAndroid');
@@ -164,7 +168,22 @@ var CreateApplyForLeave = React.createClass({
                 self.setState({endTime: dateStr});
             }
         });
-    }
+    },
+    handleSubmit: function() {
+        var selectedLeaveType = this.state.selectedLeaveType;
+        var typeId = -1;
+        if(selectedLeaveType.length == 0) {
+            ToastAndroid.show('请选择类型', ToastAndroid.SHORT);
+            return ;
+        }
+        typeId = selectedLeaveType.id;
+//        if(this.state.reason == '') {
+//            ToastAndroid.show('请填写请假原因', ToastAndroid.SHORT);
+//            return ;
+//        }
+
+        ToastAndroid.show('reason = ' + this.state.reason, ToastAndroid.SHORT);
+    },
 });
 
 const styles = {
