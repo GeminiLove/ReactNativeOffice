@@ -4,6 +4,7 @@
 'use strict';
 
 import React, {
+    Alert,
     View,
     Text,
     PixelRatio,
@@ -24,7 +25,10 @@ var CreateApplyForLeave = React.createClass({
             statusCode: 0, // -1:加载失败 0:加载中 1:加载成功
             errorMsg: '',
             leaveTypes: [],
-            selectedLeaveType: ''
+            selectedLeaveType: [],
+            reason: '',
+            startTime: '',
+            endTime: ''
         };
     },
     render: function() {
@@ -42,7 +46,7 @@ var CreateApplyForLeave = React.createClass({
                     </View>
                     <View style={styles.divider} />
                     <View style={[styles.textInputView, styles.height45]}>
-                        <TextInput value={this.state.selectedLeaveType} editable={false} placeholder='选择请假类型' underlineColorAndroid='transparent' style={[styles.textInput, styles.height40]} />
+                        <TextInput value={this.state.selectedLeaveType.name} editable={false} placeholder='选择请假类型' underlineColorAndroid='transparent' style={[styles.textInput, styles.height40]} />
                         <TouchableOpacity onPress={this.selectType.bind(this, this.state.leaveTypes)} activityOpacity={0.9}>
                             <Image source={require('./images/ic_list.png')} style={styles.iconImageStyle} />
                         </TouchableOpacity>
@@ -53,7 +57,7 @@ var CreateApplyForLeave = React.createClass({
                     </View>
                     <View style={styles.divider} />
                     <View style={[styles.textInputView, styles.height105]}>
-                        <TextInput multiline={true} placeholder='填写请假原因' underlineColorAndroid='transparent' style={[styles.textInput, styles.height100]} />
+                        <TextInput value={this.state.reason} onChange={(text) => {this.setState({reason: text})}} multiline={true} placeholder='填写请假原因' underlineColorAndroid='transparent' style={[styles.textInput, styles.height100]} />
                     </View>
                     <View style={[styles.linearTitle, styles.marginTop15]}>
                         <Image source={require('./images/ic_apply_for_leave_time.png')} style={styles.smallIcon} />
@@ -61,21 +65,27 @@ var CreateApplyForLeave = React.createClass({
                     </View>
                     <View style={styles.divider} />
                     <View style={[styles.textInputView, styles.height45]}>
-                        <TextInput editable={false} multiline={true} placeholder='选择开始时间' underlineColorAndroid='transparent' style={[styles.textInput, styles.height40]} />
-                        <TouchableOpacity onPress={this.selectDate} activityOpacity={0.9}>
+                        <TextInput value={this.state.startTime} editable={false} multiline={true} placeholder='选择开始时间' underlineColorAndroid='transparent' style={[styles.textInput, styles.height40]} />
+                        <TouchableOpacity onPress={this.selectDate.bind(this, true)} activityOpacity={0.9}>
                             <Image source={require('./images/ic_calendar.png')} style={styles.iconImageStyle} />
                         </TouchableOpacity>
                     </View>
                     <View style={[styles.textInputView, styles.height45, styles.marginTop5]}>
-                        <TextInput editable={false} multiline={true} placeholder='选择结束时间' underlineColorAndroid='transparent' style={[styles.textInput, styles.height40]} />
-                        <TouchableOpacity onPress={this.selectDate} activityOpacity={0.9}>
+                        <TextInput value={this.state.endTime} editable={false} multiline={true} placeholder='选择结束时间' underlineColorAndroid='transparent' style={[styles.textInput, styles.height40]} />
+                        <TouchableOpacity onPress={this.selectDate.bind(this, false)} activityOpacity={0.9}>
                             <Image source={require('./images/ic_calendar.png')} style={styles.iconImageStyle} />
                         </TouchableOpacity>
                     </View>
+                    <TouchableOpacity activityOpacity={0.9} onPress={this.handleSubmit}>
+                        <View style={[styles.marginTop15, styles.btnContainer]}>
+                            <Text style={styles.btnText}>提交</Text>
+                        </View>
+                    </TouchableOpacity>
                 </View>
             );
         }
     },
+    //获取请假类型
     getLeaveType: function() {
         AsyncStorage.getItem('access_token').then((accessToken) => {
             fetch(GET_TYPE_URL, {
@@ -85,13 +95,16 @@ var CreateApplyForLeave = React.createClass({
                 },
             }).then((response) => response.json())
                 .then((responseData) => {
+//                    ToastAndroid.show(JSON.stringify(responseData), ToastAndroid.SHORT);
                     var code = responseData.status;
                     if(code == 10001) {
                         var typeArray = responseData.data.list;
                         var typeStr = '';
                         var types = [];
                         for(var index in typeArray) {
-                            types.push(typeArray[index].name.toString())
+                            var id = typeArray[index].id.toString();
+                            var name = typeArray[index].name.toString();
+                            types.push({name: name, id: id});
                         }
                         this.setState({statusCode: 1, leaveTypes: types});
                     }else{
@@ -126,18 +139,51 @@ var CreateApplyForLeave = React.createClass({
     //选择请假类型，types为请假类型的数组
     selectType: function() {
         var self = this;
+        var types = [];
+        var arr = this.state.leaveTypes;
+        for(var index in arr) {
+            types.push(arr[index].name);
+        }
         var SelectListAndroid = require('./js/SelectListAndroid');
-        SelectListAndroid.showList("请选择请假类型", this.state.leaveTypes, function(selectedItem) {
-            self.setState({selectedLeaveType: selectedItem});
+        SelectListAndroid.showList("请选择请假类型", types, function(selectedItem) {
+            for(var index in arr) {
+                var name = arr[index].name;
+                if(name == selectedItem) {
+                    self.setState({selectedLeaveType: arr[index]});
+//                    ToastAndroid.show(JSON.stringify(arr[index]), ToastAndroid.SHORT);
+                }
+            }
         });
     },
-    selectDate: function() {
-        // ToastAndroid.show('select date', ToastAndroid.SHORT);
+    //选择日期
+    selectDate: function(isStartTime) {
+//        ToastAndroid.show('select date', ToastAndroid.SHORT);
         var DateAndroid = require('./DateAndroid');
-        DateAndroid.showDatepicker(function() {}, function(hour, minute) {
-            ToastAndroid.show(hour + ":" + minute, ToastAndroid.SHORT);
+        var self = this;
+        DateAndroid.showDatepicker(function() {}, function(year, month, day) {
+            var dateStr = year + '-' + (month + 1) + '-' + day;
+            if(isStartTime) {
+                self.setState({startTime: dateStr});
+            }else{
+                self.setState({endTime: dateStr});
+            }
         });
-    }
+    },
+    handleSubmit: function() {
+        var selectedLeaveType = this.state.selectedLeaveType;
+        var typeId = -1;
+        if(selectedLeaveType.length == 0) {
+            ToastAndroid.show('请选择类型', ToastAndroid.SHORT);
+            return ;
+        }
+        typeId = selectedLeaveType.id;
+//        if(this.state.reason == '') {
+//            ToastAndroid.show('请填写请假原因', ToastAndroid.SHORT);
+//            return ;
+//        }
+
+        ToastAndroid.show('reason = ' + this.state.reason, ToastAndroid.SHORT);
+    },
 });
 
 const styles = {
@@ -206,6 +252,17 @@ const styles = {
     divider: {
         height: 1 / PixelRatio.get(),
         backgroundColor: '#000000'
+    },
+    btnContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 45,
+        backgroundColor: '#6699ff',
+        borderRadius: 6,
+    },
+    btnText: {
+        fontSize: 15,
+        color: '#FFFFFF',
     }
 };
 

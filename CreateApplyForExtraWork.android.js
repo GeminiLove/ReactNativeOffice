@@ -17,7 +17,9 @@ import React, {
 var CreateApplyForExtraWork = React.createClass({
     getInitialState: function() {
         return {
-            selectedExtraWorkType: ''
+            selectedExtraWorkType: '',
+            startTime: '',
+            endTime: ''
         };
     },
     render: function() {
@@ -40,7 +42,7 @@ var CreateApplyForExtraWork = React.createClass({
                 </View>
                 <View style={styles.divider} />
                 <View style={[styles.textInputView, styles.height45]}>
-                    <TextInput underlineColorAndroid='transparent' style={[styles.textInput, styles.height40]} />
+                    <TextInput placeholder='输入标题' underlineColorAndroid='transparent' style={[styles.textInput, styles.height40]} />
                 </View>
                 <View style={[styles.linearTitle, styles.marginTop15]}>
                     <Image source={require('./images/ic_apply_for_leave_reason.png')} style={styles.smallIcon} />
@@ -48,7 +50,7 @@ var CreateApplyForExtraWork = React.createClass({
                 </View>
                 <View style={styles.divider} />
                 <View style={[styles.textInputView, styles.height105]}>
-                    <TextInput multiline={true} underlineColorAndroid='transparent' style={[styles.textInput, styles.height100]} />
+                    <TextInput placeholder='填写加班原因' multiline={true} underlineColorAndroid='transparent' style={[styles.textInput, styles.height100]} />
                 </View>
                 <View style={[styles.linearTitle, styles.marginTop15]}>
                     <Image source={require('./images/ic_apply_for_leave_time.png')} style={styles.smallIcon} />
@@ -56,17 +58,22 @@ var CreateApplyForExtraWork = React.createClass({
                 </View>
                 <View style={styles.divider} />
                 <View style={[styles.textInputView, styles.height45]}>
-                    <TextInput multiline={true} placeholder='选择开始时间' underlineColorAndroid='transparent' style={[styles.textInput, styles.height40]} />
-                    <TouchableOpacity onPress={this.selectDate} activityOpacity={0.9}>
+                    <TextInput value={this.state.startTime} multiline={true} placeholder='选择开始时间' underlineColorAndroid='transparent' style={[styles.textInput, styles.height40]} />
+                    <TouchableOpacity onPress={this.selectDate.bind(this, true)} activityOpacity={0.9}>
                         <Image source={require('./images/ic_calendar.png')} style={styles.iconImageStyle} />
                     </TouchableOpacity>
                 </View>
                 <View style={[styles.textInputView, styles.height45, styles.marginTop5]}>
-                    <TextInput multiline={true} placeholder='选择结束时间' underlineColorAndroid='transparent' style={[styles.textInput, styles.height40]} />
-                    <TouchableOpacity onPress={this.selectDate} activityOpacity={0.9}>
+                    <TextInput value={this.state.endTime} multiline={true} placeholder='选择结束时间' underlineColorAndroid='transparent' style={[styles.textInput, styles.height40]} />
+                    <TouchableOpacity onPress={this.selectDate.bind(this, false)} activityOpacity={0.9}>
                         <Image source={require('./images/ic_calendar.png')} style={styles.iconImageStyle} />
                     </TouchableOpacity>
                 </View>
+                <TouchableOpacity activityOpacity={0.9}>
+                    <View style={[styles.marginTop15, styles.btnContainer]}>
+                        <Text style={styles.btnText}>提交</Text>
+                    </View>
+                </TouchableOpacity>
             </View>
         );
     },
@@ -80,11 +87,16 @@ var CreateApplyForExtraWork = React.createClass({
         });
     },
     //选择时间
-    selectDate: function() {
-        // ToastAndroid.show('select date', ToastAndroid.SHORT);
+    selectDate: function(isStartTime) {
+        var self = this;
         var DateAndroid = require('./DateAndroid');
-        DateAndroid.showDatepicker(function() {}, function(hour, minute) {
-            ToastAndroid.show(hour + ":" + minute, ToastAndroid.SHORT);
+        DateAndroid.showDatepicker(function() {}, function(year, month, day) {
+            var dateStr = year + '-' + (month + 1) + '-' + day;
+            if(isStartTime) {
+                self.setState({startTime: dateStr});
+            }else{
+                self.setState({endTime: dateStr});
+            }
         });
     }
 });
@@ -156,6 +168,17 @@ const styles = {
         height: 30,
         marginRight: 10,
     },
+    btnContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 45,
+        backgroundColor: '#6699ff',
+        borderRadius: 6,
+    },
+    btnText: {
+        fontSize: 15,
+        color: '#FFFFFF',
+    }
 };
 
 module.exports = CreateApplyForExtraWork;
